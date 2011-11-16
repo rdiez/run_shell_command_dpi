@@ -1,0 +1,82 @@
+
+This is the source file from which the README file is generated.
+
+This file is written in Perl's Plain Old Documentation (POD) format.
+Run the following Perl commands to convert it to text or to HTML
+for easy reading:
+
+  podchecker README.pod  # Optional, check syntax.
+  pod2text README.pod >README.txt
+
+  # pod2html seems buggy, at least in perl v5.10.1, therefore
+  # I'm using this long one-liner instead (with bash):
+  perl -MPod::Simple::HTML  -e "\$p = Pod::Simple::HTML->new; \$p->index( 1 ); \$p->output_fh( *STDOUT{IO} ); \$p->force_title('Run Shell Command DPI module for Verilator'); \$p->parse_file('README.pod');"  >README.html
+
+This file is best edited with emacs module pod-mode, available in CPAN.
+However, the POD syntax is quite simple and can be edited with a standard text editor.
+
+=pod
+
+=head1 Run Shell Command DPI module for Verilator
+
+Version 1.0, November 2011
+
+Many HDL simulators implement some sort of I<< $system() >> routine that allows you
+to start an external child process from your Verilog source code.
+
+Because L<< Verilator|http://www.veripool.org/ >> (as of Oct 2011, version 3.824) does not have such a routine,
+I wrote a small DPI module as a replacement.
+
+Instead of I<< $system() >>, this implementation is called I<< run_shell_command_dpi() >> and
+takes a printf-like format string with variable arguments. I<< run_shell_command_dpi() >> returns an error/success indication and,
+in a separate output argument, the child process' exit code.
+
+I<< run_shell_command_dpi() >> calls Linux's I<< system() >> behind the scenes, which is documented
+as having the same effect as calling I<< sh -c <command> >> and does not return until the child process terminates.
+However, you can append an ampersand ('&') to the command in order to leave the child process running in the background, see the example below.
+
+Note that the current version has been developed and tested only on Linux.
+
+=head2 Installation instructions
+
+You need to be familiar with Verilator,
+as you need to add file I<< run_shell_command_dpi.cpp >> to the generated C++ code. There are a few ways to do that:
+
+  Alternative 1) Add run_shell_command_dpi.cpp to the Verilator command line.
+  Alternative 2) Include run_shell_command_dpi.cpp from your main .cpp file (with #include).
+  Alternative 3) Edit the makefile you are using.
+
+You also need to add the following to your Verilog source code:
+
+  import "DPI-C" function int run_shell_command_dpi ( output int command_exit_code,
+                                                      input string shell_cmd_to_run_formatted /*verilator sformat*/ );
+
+Note that the I<< /*verilator sformat*/ >> hint is specific to Verilator and will not work on other HDL simulators.
+
+Usage example in Verilog:
+
+   int shell_cmd_exit_code;
+
+   if ( 0 != run_shell_command_dpi( shell_cmd_exit_code,
+                                    "gnome-terminal --command \"sh -c 'telnet localhost %d'\" &",
+                                    5678 ) )
+     begin
+        $display("Error trying to start the shell command.");
+        $finish;
+     end;
+
+   if ( 0 != shell_cmd_exit_code )
+     begin
+        $display( "The shell command exited with a non-zero status code." );
+        $finish;
+     end;
+
+=head2 License
+
+Copyright (C) R. Diez 2011,  rdiezmail-openrisc at yahoo.de
+
+The Run Shell Command DPI source code is released under the LGPL 3 license.
+
+This document is released under the Creative Commons Attribution-ShareAlike 3.0 Unported (CC BY-SA 3.0) license.
+
+=cut
