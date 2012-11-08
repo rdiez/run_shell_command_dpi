@@ -25,7 +25,8 @@ Many HDL simulators implement some sort of I<< $system() >> routine that allows 
 to start an external child process from your Verilog source code.
 
 Because L<< Verilator|http://www.veripool.org/ >> (as of Oct 2011, version 3.824) does not have such a routine,
-I wrote a small DPI module as a replacement.
+I wrote a small DPI module as a replacement. [Later note: Verilator supports I<< $system() >>
+since version 3.830 (2011/11/27)]
 
 Instead of I<< $system() >>, this implementation is called I<< run_shell_command_dpi() >> and
 takes a printf-like format string with variable arguments. I<< run_shell_command_dpi() >> returns an error/success indication and,
